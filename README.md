@@ -2,6 +2,21 @@
 
 A Flask app for exploring Vietnam through natural-language questions. Ask “Which destinations are good for trekking?” to see a recommendation alongside the matching records and their connections. The included hackathon dataset covers 360 entities across 10 cities, 150 attractions, 100 hotels, and 100 activities.
 
+![Vietnam Travel AI search interface with a question about Hanoi street food](docs/screenshots/search.png)
+
+<details>
+<summary>See the answer, vector matches, and graph relationships</summary>
+
+The Hanoi street-food example pairs the generated recommendation with the places retrieved from Pinecone.
+
+![Generated Hanoi recommendation beside five ranked vector matches](docs/screenshots/results.png)
+
+| Connections from Hanoi to other cities | Attractions located in Hanoi |
+| --- | --- |
+| ![Hanoi connected to Hue and Nha Trang](docs/screenshots/city-links.png) | ![Three attraction records linked to Hanoi](docs/screenshots/attraction-links.png) |
+
+</details>
+
 ## Run the local demo
 
 From the project directory on macOS or Linux, run
