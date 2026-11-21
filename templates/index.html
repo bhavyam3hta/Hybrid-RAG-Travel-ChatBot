@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vietnam Travel Explorer - Cartoon Hybrid RAG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #FFFDF5;
+      --black: #18181b;
+      --yellow: #FFDD00;
+      --pink: #FF5B84;
+      --cyan: #00F0FF;
+      --green: #00E599;
+      --purple: #B794F6;
+      --card-bg: #FFFFFF;
+      --shadow: 5px 5px 0px var(--black);
+      --shadow-sm: 3px 3px 0px var(--black);
+      --shadow-lg: 8px 8px 0px var(--black);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Fredoka', 'Plus Jakarta Sans', cursive, sans-serif;
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--black) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--black);
+      min-height: 100vh;
+      padding: 24px 16px 60px;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--yellow);
+      border: 4px solid var(--black);
+      border-radius: 24px;
+      padding: 24px 28px;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: "🇻🇳";
+      position: absolute;
+      right: -10px;
+      bottom: -20px;
+      font-size: 96px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .brand-title {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-subtitle {
+      font-size: 1.05rem;
+      font-weight: 500;
+      margin-top: 6px;
+      color: #333;
+    }
+
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge {
+      background: var(--card-bg);
+      border: 3px solid var(--black);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.15s ease;
+    }
+
+    .badge:hover {
+      transform: translateY(-2px);
+    }
+
+    .badge.pink { background: var(--pink); color: #fff; }
+    .badge.cyan { background: var(--cyan); }
+    .badge.green { background: var(--green); }
+    .badge.purple { background: var(--purple); color: #fff; }
+
+    /* DISTINGUISHED VIEW GRAPH CTA BUTTON */
+    .btn-view-graph {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #9333EA 0%, #7C3AED 100%);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 800;
+      padding: 12px 22px;
+      border: 4px solid var(--black);
+      border-radius: 18px;
+      box-shadow: 6px 6px 0px var(--black);
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: graph-float 3s ease-in-out infinite;
+    }
+
+    @keyframes graph-float {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-4px) rotate(-1deg);
+      }
+    }
+
+    .btn-view-graph:hover {
+      background: linear-gradient(135deg, #A855F7 0%, #9333EA 100%);
+      color: #FFFFFF;
+      transform: translate(-3px, -3px) scale(1.03) rotate(-1.5deg);
+      box-shadow: 9px 9px 0px var(--black);
+    }
+
+    .btn-view-graph:active {
+      transform: translate(2px, 2px) scale(0.98);
+      box-shadow: 2px 2px 0px var(--black);
+    }
+
+    .btn-view-graph .btn-tag {
+      background: var(--yellow);
+      color: var(--black);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border: 2px solid var(--black);
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 1.5px 1.5px 0px var(--black);
+    }
+
+    .btn-view-graph .btn-arrow {
+      font-size: 1.2rem;
+      transition: transform 0.2s ease;
+      display: inline-block;
+    }
+
+    .btn-view-graph:hover .btn-arrow {
+      transform: translateX(4px) scale(1.15);
+    }
+
+    /* SEARCH SECTION */
+    .search-card {
+      background: var(--card-bg);
+      border: 4px solid var(--black);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 28px;
+    }
+
+    .search-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-form {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 260px;
+      padding: 16px 20px;
+      font-size: 1.15rem;
+      font-family: inherit;
+      font-weight: 600;
+      border: 3px solid var(--black);
+      border-radius: 16px;
+      background: #FAFAFA;
+      box-shadow: inset 2px 2px 0px rgba(0,0,0,0.06);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      background: #FFFFFF;
+      border-color: var(--black);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 1.15rem;
+      font-weight: 700;
+      padding: 16px 28px;
+      border: 3px solid var(--black);
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--black);
+    }
+
+    .btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px var(--black);
+    }
+
+    .btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px var(--black);
+    }
+
+    .btn-pink { background: var(--pink); color: #fff; }
+    .btn-cyan { background: var(--cyan); }
+    .btn-green { background: var(--green); }
+    .btn-yellow { background: var(--yellow); }
+
+    /* SUGGESTION PILLS */
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    .sugg-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sugg-pill {
+      background: #F4F4F5;
+      border: 2px solid var(--black);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px var(--black);
+      transition: all 0.15s;
+    }
+
+    .sugg-pill:hover {
+      background: var(--yellow);
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px var(--black);
+    }
+
+    /* LOADING SPINNER */
+    .loading-box {
+      display: none;
+      background: var(--cyan);
+      border: 4px solid var(--black);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 28px;
+      text-align: center;
+      animation: bounce 1.5s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .loading-text {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .loading-pipeline {
+      margin-top: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    /* RESULTS GRID */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 900px) {
+      .results-grid {
+        grid-template-columns: 1.3fr 1fr;
+      }
+    }
+
+    /* CARD STYLING */
+    .card {
+      background: var(--card-bg);
+      border: 4px solid var(--black);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 3px dashed var(--black);
+    }
+
+    .card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card.answer-card {
+      background: #FFFDF0;
+      border-color: var(--black);
+    }
+
+    .answer-body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: #222;
+    }
+
+    .answer-body h3 {
+      font-size: 1.3rem;
+      margin: 16px 0 8px;
+      color: var(--black);
+    }
+
+    .answer-body h4 {
+      font-size: 1.1rem;
+      margin: 14px 0 6px;
+      color: #333;
+    }
+
+    .answer-body p {
+      margin-bottom: 12px;
+    }
+
+    .answer-body ul, .answer-body ol {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .answer-body li {
+      margin-bottom: 4px;
+    }
+
+    /* VECTOR CARDS */
+    .matches-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .match-item {
+      background: #FFFFFF;
+      border: 3px solid var(--black);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: transform 0.15s;
+    }
+
+    .match-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 5px 5px 0px var(--black);
+    }
+
+    .match-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .match-score {
+      background: var(--green);
+      border: 2px solid var(--black);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .match-meta {
+      font-size: 0.9rem;
+      color: #555;
+      font-weight: 600;
+    }
+
+    .tag-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .tag-chip {
+      background: var(--yellow);
+      border: 1.5px solid var(--black);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 1px 6px;
+    }
+
+    /* GRAPH FACTS */
+    .graph-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .graph-item {
+      background: #FAF8FF;
+      border: 3px solid var(--black);
+      border-radius: 14px;
+      padding: 10px 14px;
+      box-shadow: 3px 3px 0px var(--black);
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .graph-rel {
+      display: inline-block;
+      background: var(--purple);
+      color: #fff;
+      border: 2px solid var(--black);
+      border-radius: 8px;
+      padding: 1px 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin: 0 4px;
+    }
+
+    .graph-node {
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 36px;
+      text-align: center;
+      font-weight: 600;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <div>
+        <h1 class="brand-title">🌴 Vietnam Travel AI</h1>
+        <p class="brand-subtitle">Interactive Hybrid RAG with Vector Search & Knowledge Graphs</p>
+        <div class="badge-bar" style="margin-top: 10px;">
+          {% if demo_mode %}
+          <span class="badge yellow">Local demo: keyword search + dataset connections</span>
+          <span class="badge pink">No AI or cloud services used</span>
+          {% else %}
+          <span class="badge green">Pinecone + Neo4j + Gemini configured</span>
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <a href="/graph-viz" target="vietnam_graph_viz" rel="opener" class="btn-view-graph">
+          <span class="btn-tag">✨ 3D GALAXY</span>
+          <span>🕸️ EXPLORE KNOWLEDGE GRAPH</span>
+          <span class="btn-arrow">➔</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- SEARCH BAR -->
+    <div class="search-card">
+      <div class="search-title">
+        <span>🗣️ What would you like to explore in Vietnam?</span>
+      </div>
+      <form class="search-form" id="searchForm">
+        <input 
+          type="text" 
+          id="queryInput" 
+          class="search-input" 
+          placeholder="e.g. Best beaches in Danang, Sapa mountain hikes, Hanoi street food..." 
+          required 
+          autocomplete="off"
+        />
+        <button type="submit" class="btn btn-pink" id="submitBtn">
+          <span>🚀 EXPLORE</span>
+        </button>
+      </form>
+
+      <!-- SUGGESTION PILLS -->
+      <div class="suggestions">
+        <span class="sugg-label">Try asking:</span>
+        <span class="sugg-pill" onclick="fillQuery('What are the best beaches in Vietnam?')">🏖️ Best beaches</span>
+        <span class="sugg-pill" onclick="fillQuery('What are must-try street foods in Hanoi?')">🍜 Hanoi street food</span>
+        <span class="sugg-pill" onclick="fillQuery('Show me cultural temples and heritage sites in Hue')">🏯 Hue temples</span>
+        <span class="sugg-pill" onclick="fillQuery('Adventure trekking and rice terraces in Sapa')">⛰️ Sapa trekking</span>
+        <span class="sugg-pill" onclick="fillQuery('Plan a 3-day itinerary for Hoi An')">🏮 3-Day Hoi An</span>
+      </div>
+    </div>
+
+    <!-- LOADING INDICATOR -->
+    <div class="loading-box" id="loadingBox">
+      <div class="loading-text">⚡ AI Travel Agent at work! 🛵💨</div>
+      <div class="loading-pipeline">{{ "Searching local records and their connections" if demo_mode else "Vectorizing Query ➔ Pinecone Search ➔ Neo4j ➔ Gemini" }}</div>
+    </div>
+
+    <!-- RESULTS SECTION -->
+    <div class="results-grid" id="resultsGrid" style="display: none;">
+      <!-- LEFT: AI ANSWER -->
+      <div class="card answer-card">
+        <div class="card-header">
+          <div class="card-title">🤖 Travel Recommendation</div>
+          <span class="badge yellow">{{ "Dataset Summary" if demo_mode else "Generated Answer" }}</span>
+        </div>
+        <div class="answer-body" id="answerContent"></div>
+      </div>
+
+      <!-- RIGHT: RAG RETRIEVAL CONTEXT -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        <!-- PINECONE MATCHES -->
+        <div class="card" style="background: #FAFEFF;">
+          <div class="card-header">
+            <div class="card-title">🎯 {{ "Keyword Matches" if demo_mode else "Vector Matches" }}</div>
+            <span class="badge green">{{ "Local JSON" if demo_mode else "Pinecone" }}</span>
+          </div>
+          <div class="matches-list" id="matchesList"></div>
+        </div>
+
+        <!-- NEO4J GRAPH FACTS -->
+        <div class="card" style="background: #FCFAFF;">
+          <div class="card-header">
+            <div class="card-title">🕸️ Graph Relations</div>
+            <a href="/graph-viz" target="vietnam_graph_viz" rel="opener" class="badge purple" style="text-decoration:none; cursor:pointer;" title="Open full 360-node interactive graph in new tab">
+              🌐 Full 360-Node Graph ↗
+            </a>
+          </div>
+          <div class="graph-list" id="graphList"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      {{ "Local demo using the included travel dataset. Enable cloud mode in config.py for hybrid RAG." if demo_mode else "Powered by Neo4j, Pinecone, and Gemini" }}
+    </footer>
+  </div>
+
+  <script>
+    // Name the main chat tab so child tabs can switch back seamlessly
+    window.name = "vietnam_chat_main";
+
+    // Auto-fill and submit query if ?q= URL parameter is provided
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get('q');
+      if (q) {
+        document.getElementById('queryInput').value = q;
+        document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+      }
+    });
+
+    function fillQuery(text) {
+      document.getElementById('queryInput').value = text;
+      document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+    }
+
+    document.getElementById('searchForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const query = document.getElementById('queryInput').value.trim();
+      if (!query) return;
+
+      const loadingBox = document.getElementById('loadingBox');
+      const resultsGrid = document.getElementById('resultsGrid');
+      const submitBtn = document.getElementById('submitBtn');
+
+      loadingBox.style.display = 'block';
+      resultsGrid.style.display = 'none';
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: query })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Render Answer using marked markdown
+          document.getElementById('answerContent').textContent = data.answer || 'No answer generated.';
+          document.getElementById('answerContent').style.whiteSpace = 'pre-wrap';
+
+          // Render Vector Matches
+          const matchesList = document.getElementById('matchesList');
+          matchesList.innerHTML = '';
+          (data.matches || []).forEach(m => {
+            const tagsHtml = (m.tags || []).slice(0, 4).map(t => `<span class="tag-chip">#${t}</span>`).join('');
+            matchesList.innerHTML += `
+              <div class="match-item">
+                <div class="match-top">
+                  <span>📍 ${m.name}</span>
+                  <span class="match-score">${m.score}% {{ "keyword coverage" if demo_mode else "similarity" }}</span>
+                </div>
+                <div class="match-meta">🏙️ ${m.city} • 🏷️ ${m.type}</div>
+                ${tagsHtml ? `<div class="tag-chips">${tagsHtml}</div>` : ''}
+              </div>
+            `;
+          });
+
+          // Render Graph Facts
+          const graphList = document.getElementById('graphList');
+          graphList.innerHTML = '';
+          (data.graph_facts || []).forEach(f => {
+            const src = f.source.replace('city_', '').replace('_', ' ');
+            graphList.innerHTML += `
+              <div class="graph-item">
+                <span class="graph-node">${src}</span>
+                <span class="graph-rel">${f.rel}</span>
+                <span class="graph-node">${f.target_name}</span>
+                <div style="font-size:0.85rem; color:#666; margin-top:2px;">${f.target_desc ? f.target_desc.substring(0, 100) + '...' : ''}</div>
+              </div>
+            `;
+          });
+
+          resultsGrid.style.display = 'grid';
+        } else {
+          alert("Error: " + (data.error || "Failed to process query"));
+        }
+      } catch (err) {
+        alert("Failed to connect to backend: " + err);
+      } finally {
+        loadingBox.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
+

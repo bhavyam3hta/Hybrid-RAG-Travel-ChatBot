@@ -1,0 +1,7 @@
+neo4j
+google-genai
+pinecone
+pyvis
+networkx
+tqdm
+flask
